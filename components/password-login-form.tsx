@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useId } from "react";
 import { LogIn } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   loginWithAccessCode,
@@ -17,7 +16,6 @@ const initialState: LoginActionState = {
 };
 
 export function PasswordLoginForm() {
-  const router = useRouter();
   const accessCodeId = useId();
   const [state, action, pending] = useActionState(
     loginWithAccessCode,
@@ -30,14 +28,8 @@ export function PasswordLoginForm() {
       return;
     }
 
-    if (state.status === "success") {
-      toast.success(state.message);
-      router.replace("/view");
-      return;
-    }
-
     toast.error(state.message);
-  }, [router, state]);
+  }, [state]);
 
   return (
     <form action={action} className="w-full max-w-md">

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 import {
   AUTH_COOKIE_MAX_AGE,
   AUTH_COOKIE_NAME,
@@ -10,7 +11,7 @@ import {
 import { verifyPassword } from "@/lib/auth"
 
 export type LoginActionState = {
-  status: "idle" | "success" | "error"
+  status: "idle" | "error"
   message?: string
 }
 
@@ -45,9 +46,5 @@ export async function loginWithAccessCode(
   })
 
   revalidatePath("/")
-
-  return {
-    status: "success",
-    message: "Access granted.",
-  }
+  redirect("/view")
 }

@@ -1,0 +1,26 @@
+import { NextRequest, NextResponse } from "next/server"
+import { AUTH_COOKIE_NAME, verifyAuthSessionValue } from "@/lib/auth-session"
+import { isProtectedPath } from "@/lib/protected-routes"
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  if (!isProtectedPath(pathname)) {
+    return NextResponse.next()
+  }
+
+  const session = request.cookies.get(AUTH_COOKIE_NAME)?.value
+
+  if (session && verifyAuthSessionValue(session)) {
+    return NextResponse.next()
+  }
+
+  const loginUrl = new URL("/", request.url)
+  loginUrl.searchParams.set("next", pathname)
+
+  return NextResponse.redirect(loginUrl)
+}
+
+export const config = {
+  matcher: ["/view/:path*", "/portfolio/:path*"],
+}
