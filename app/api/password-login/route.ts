@@ -18,15 +18,20 @@ function getSafeNextPath(value: FormDataEntryValue | null) {
 }
 
 function redirectToLogin(
-  request: NextRequest,
   error: "missing" | "invalid",
   nextPath: string,
 ) {
-  const loginUrl = new URL("/", request.url);
-  loginUrl.searchParams.set("error", error);
-  loginUrl.searchParams.set("next", nextPath);
+  const loginParams = new URLSearchParams({
+    error,
+    next: nextPath,
+  });
 
-  return NextResponse.redirect(loginUrl, { status: 303 });
+  return new NextResponse(null, {
+    status: 303,
+    headers: {
+      Location: `/?${loginParams.toString()}`,
+    },
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -35,15 +40,18 @@ export async function POST(request: NextRequest) {
   const nextPath = getSafeNextPath(formData.get("next"));
 
   if (typeof accessCode !== "string" || accessCode.length === 0) {
-    return redirectToLogin(request, "missing", nextPath);
+    return redirectToLogin("missing", nextPath);
   }
 
   if (!verifyPassword(accessCode)) {
-    return redirectToLogin(request, "invalid", nextPath);
+    return redirectToLogin("invalid", nextPath);
   }
 
-  const response = NextResponse.redirect(new URL(nextPath, request.url), {
+  const response = new NextResponse(null, {
     status: 303,
+    headers: {
+      Location: nextPath,
+    },
   });
 
   response.cookies.set(AUTH_COOKIE_NAME, createAuthSessionValue(), {

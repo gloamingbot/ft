@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId } from "react";
 import { LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ export function PasswordLoginForm({
   nextPath = "/view",
 }: PasswordLoginFormProps) {
   const accessCodeId = useId();
-  const [submitting, setSubmitting] = useState(false);
   const isError = Boolean(errorMessage);
 
   useEffect(() => {
@@ -33,7 +32,6 @@ export function PasswordLoginForm({
       action="/api/password-login"
       method="post"
       className="w-full max-w-md"
-      onSubmit={() => setSubmitting(true)}
     >
       <input type="hidden" name="next" value={nextPath} />
       <FieldGroup className="gap-3">
@@ -47,18 +45,16 @@ export function PasswordLoginForm({
               aria-label="Access code"
               placeholder="Enter access code"
               required
-              disabled={submitting}
               aria-invalid={isError}
               className="h-10 px-3 text-sm"
             />
             <Button
               type="submit"
               size="lg"
-              disabled={submitting}
               className="h-10 w-full gap-2 px-4 sm:w-auto"
             >
               <LogIn aria-hidden="true" className="size-4" />
-              {submitting ? "Checking..." : "Login"}
+              Login
             </Button>
           </div>
         </Field>

@@ -15,10 +15,14 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const loginUrl = new URL("/", request.url)
-  loginUrl.searchParams.set("next", pathname)
+  const loginParams = new URLSearchParams({ next: pathname })
 
-  return NextResponse.redirect(loginUrl)
+  return new NextResponse(null, {
+    status: 307,
+    headers: {
+      Location: `/?${loginParams.toString()}`,
+    },
+  })
 }
 
 export const config = {
