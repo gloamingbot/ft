@@ -12,10 +12,13 @@ export function getRequestOrigin(request: NextRequest) {
     return request.nextUrl.origin;
   }
 
+  return `${getRequestProtocol(request)}://${host}`;
+}
+
+export function getRequestProtocol(request: NextRequest) {
   const forwardedProto = firstHeaderValue(
     request.headers.get("x-forwarded-proto"),
   );
-  const protocol = forwardedProto || request.nextUrl.protocol.replace(":", "");
 
-  return `${protocol}://${host}`;
+  return forwardedProto || request.nextUrl.protocol.replace(":", "");
 }

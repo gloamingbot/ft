@@ -6,7 +6,7 @@ import {
 } from "@/lib/auth-session";
 import { verifyPassword } from "@/lib/auth";
 import { isProtectedPath } from "@/lib/protected-routes";
-import { getRequestOrigin } from "@/lib/request-origin";
+import { getRequestOrigin, getRequestProtocol } from "@/lib/request-origin";
 
 const DEFAULT_NEXT_PATH = "/view";
 
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     maxAge: AUTH_COOKIE_MAX_AGE,
     path: "/",
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: getRequestProtocol(request) === "https",
   });
 
   return response;
