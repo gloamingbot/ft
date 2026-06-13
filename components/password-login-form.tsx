@@ -1,38 +1,41 @@
 "use client";
 
-import { useActionState, useEffect, useId } from "react";
+import { useEffect, useId, useState } from "react";
 import { LogIn } from "lucide-react";
 import { toast } from "sonner";
-import {
-  loginWithAccessCode,
-  type LoginActionState,
-} from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 
-const initialState: LoginActionState = {
-  status: "idle",
+type PasswordLoginFormProps = {
+  errorMessage?: string;
+  nextPath?: string;
 };
 
-export function PasswordLoginForm() {
+export function PasswordLoginForm({
+  errorMessage,
+  nextPath = "/view",
+}: PasswordLoginFormProps) {
   const accessCodeId = useId();
-  const [state, action, pending] = useActionState(
-    loginWithAccessCode,
-    initialState,
-  );
-  const isError = state.status === "error";
+  const [submitting, setSubmitting] = useState(false);
+  const isError = Boolean(errorMessage);
 
   useEffect(() => {
-    if (!state.message || state.status === "idle") {
+    if (!errorMessage) {
       return;
     }
 
-    toast.error(state.message);
-  }, [state]);
+    toast.error(errorMessage);
+  }, [errorMessage]);
 
   return (
-    <form action={action} className="w-full max-w-md">
+    <form
+      action="/api/password-login"
+      method="post"
+      className="w-full max-w-md"
+      onSubmit={() => setSubmitting(true)}
+    >
+      <input type="hidden" name="next" value={nextPath} />
       <FieldGroup className="gap-3">
         <Field data-invalid={isError}>
           <div className="flex w-full flex-col gap-2 sm:flex-row">
@@ -44,18 +47,18 @@ export function PasswordLoginForm() {
               aria-label="Access code"
               placeholder="Enter access code"
               required
-              disabled={pending}
+              disabled={submitting}
               aria-invalid={isError}
               className="h-10 px-3 text-sm"
             />
             <Button
               type="submit"
               size="lg"
-              disabled={pending}
+              disabled={submitting}
               className="h-10 w-full gap-2 px-4 sm:w-auto"
             >
               <LogIn aria-hidden="true" className="size-4" />
-              {pending ? "Checking..." : "Login"}
+              {submitting ? "Checking..." : "Login"}
             </Button>
           </div>
         </Field>
