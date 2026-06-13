@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth-session";
 import { verifyPassword } from "@/lib/auth";
 import { isProtectedPath } from "@/lib/protected-routes";
+import { getRequestOrigin } from "@/lib/request-origin";
 
 const DEFAULT_NEXT_PATH = "/view";
 
@@ -18,20 +19,15 @@ function getSafeNextPath(value: FormDataEntryValue | null) {
 }
 
 function redirectToLogin(
+  request: NextRequest,
   error: "missing" | "invalid",
   nextPath: string,
 ) {
-  const loginParams = new URLSearchParams({
-    error,
-    next: nextPath,
-  });
+  const loginUrl = new URL("/", getRequestOrigin(request));
+  loginUrl.searchParams.set("error", error);
+  loginUrl.searchParams.set("next", nextPath);
 
-  return new NextResponse(null, {
-    status: 303,
-    headers: {
-      Location: `/?${loginParams.toString()}`,
-    },
-  });
+  return NextResponse.redirect(loginUrl, { status: 303 });
 }
 
 export async function POST(request: NextRequest) {
@@ -40,19 +36,17 @@ export async function POST(request: NextRequest) {
   const nextPath = getSafeNextPath(formData.get("next"));
 
   if (typeof accessCode !== "string" || accessCode.length === 0) {
-    return redirectToLogin("missing", nextPath);
+    return redirectToLogin(request, "missing", nextPath);
   }
 
   if (!verifyPassword(accessCode)) {
-    return redirectToLogin("invalid", nextPath);
+    return redirectToLogin(request, "invalid", nextPath);
   }
 
-  const response = new NextResponse(null, {
-    status: 303,
-    headers: {
-      Location: nextPath,
-    },
-  });
+  const response = NextResponse.redirect(
+    new URL(nextPath, getRequestOrigin(request)),
+    { status: 303 },
+  );
 
   response.cookies.set(AUTH_COOKIE_NAME, createAuthSessionValue(), {
     httpOnly: true,

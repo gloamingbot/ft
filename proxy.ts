@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { AUTH_COOKIE_NAME, verifyAuthSessionValue } from "@/lib/auth-session"
 import { isProtectedPath } from "@/lib/protected-routes"
+import { getRequestOrigin } from "@/lib/request-origin"
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -15,14 +16,10 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const loginParams = new URLSearchParams({ next: pathname })
+  const loginUrl = new URL("/", getRequestOrigin(request))
+  loginUrl.searchParams.set("next", pathname)
 
-  return new NextResponse(null, {
-    status: 307,
-    headers: {
-      Location: `/?${loginParams.toString()}`,
-    },
-  })
+  return NextResponse.redirect(loginUrl)
 }
 
 export const config = {
