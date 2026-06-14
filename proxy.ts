@@ -6,6 +6,17 @@ import { getRequestOrigin } from "@/lib/request-origin"
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  if (request.method === "POST" && request.headers.has("next-action")) {
+    const reloadUrl = new URL(
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+      getRequestOrigin(request),
+    )
+    const response = NextResponse.redirect(reloadUrl, { status: 303 })
+    response.headers.set("Cache-Control", "no-store")
+
+    return response
+  }
+
   if (!isProtectedPath(pathname)) {
     return NextResponse.next()
   }
@@ -23,5 +34,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/view/:path*", "/portfolio/:path*"],
+  matcher: ["/((?!api|_next/static|_next/image|.*\\..*).*)"],
 }
